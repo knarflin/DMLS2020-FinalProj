@@ -143,7 +143,7 @@ class Classifier(nn.Module):
         return self.fc(out)
 
 
-def readfile(training_dataset):
+def do_train(training_dataset):
 
     from torchvision.datasets import ImageFolder
 
@@ -225,7 +225,7 @@ def main():
     testing_dataset.print_stats()
     training_dataset.print_stats()
 
-    readfile(training_dataset)
+    do_train(training_dataset)
 
 
 if __name__ == "__main__":
