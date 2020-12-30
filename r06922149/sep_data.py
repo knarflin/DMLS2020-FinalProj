@@ -15,7 +15,7 @@ np.random.seed(0)
 
 def main():
 
-    original_path = "./data/train"
+    original_path = "acc-german-traffic-sign-classification\\GTSRB_Challenge\\train"
     a = os.walk(original_path)
 
     image_files = []
@@ -35,7 +35,7 @@ def main():
 
     for image_file in val_image_files:
         print(image_file)
-        image_class = int(image_file.split("/")[-2])
+        image_class = int(image_file.split("\\")[-2])
         copy_dst_dir = "splitdata/validation/%s" % (str(image_class).zfill(5))
         shutil.copy(image_file, copy_dst_dir)
 
@@ -43,7 +43,7 @@ def main():
     last_stream_num = ""
     last_site = 0
     for image_file in train_image_files:
-        image_class_str, image_filename = image_file.split("/")[-2:]
+        image_class_str, image_filename = image_file.split("\\")[-2:]
         image_class = int(image_class_str)
         stream_num = image_filename.split('_')[0]
 
@@ -59,7 +59,7 @@ def main():
             else:
                 site = np.random.choice(4, 1, p=[0.1, 0.1, 0.1, 0.7])[0]
 
-        copy_dst_dir = "splitdata/train/site%d/%s" % (
+        copy_dst_dir = "splitdata\\train\\site%d\\%s" % (
             site, str(image_class).zfill(5))
 
         shutil.copy(image_file, copy_dst_dir)
@@ -76,12 +76,12 @@ def create_dir_tree():
 
     Path("splitdata/validation").mkdir(parents=True, exist_ok=True)
     for image_class in range(num_of_class):
-        Path("splitdata/validation/%s" %
+        Path("splitdata\\validation\\%s" %
              (str(image_class).zfill(5))).mkdir(parents=True, exist_ok=True)
 
     for site in range(num_of_site):
         for image_class in range(num_of_class):
-            Path("splitdata/train/site%d/%s" %
+            Path("splitdata\\train\\site%d\\%s" %
                  (site, str(image_class).zfill(5))).mkdir(parents=True, exist_ok=True)
 
 
