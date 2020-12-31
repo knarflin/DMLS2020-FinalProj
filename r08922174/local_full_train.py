@@ -12,7 +12,6 @@ from torch.utils.data import DataLoader
 
 from torchvision import transforms
 
-args = {'ep' : 100, 'size': 48, 'lr' : 0.01, 'bs' : 16, 'load' : None, 'save' : 'tmp.weight', 'show' : 1, 'site' : 0}
 parser = argparse.ArgumentParser()
 parser.add_argument('--train_path', type=str, default='./GTSRB_Challenge/train')
 parser.add_argument('--test_path', type=str, default='./GTSRB_Challenge/test')
@@ -25,6 +24,27 @@ parser.add_argument('--save', type=str, default='tmp.weight')
 parser.add_argument('--show', type=int, default=1)
 parser.add_argument('--site', type=int, default=0)
 args = parser.parse_args()
+
+
+
+def statistic(DataPath):
+	
+	transform = transforms.Compose([
+		transforms.Resize((args['size'], args['size'])), 
+		transforms.ToTensor(), 
+	])
+	dataset = ImageFolder(DataPath, transform = transform)
+
+	count = torch.IntTensor([0] * 43)
+	mean = torch.stack([image.mean((1, 2)) for image, _ in dataset]).mean(0)
+	std = torch.stack([image for image, _ in dataset]).std((0, 2, 3))
+	for label in range(43):
+		count[label] = len(os.listdir(DataPath + '%05d/'%label))
+
+	del transform, dataset
+
+	return tuple(mean), tuple(std), count
+
 
 class DataSet:
     def __init__(self):
@@ -157,30 +177,31 @@ class Classifier(nn.Module):
         return self.fc(out)
 
 
-def do_train(training_dataset):
+def do_train():
 
     from torchvision.datasets import ImageFolder
 
-    custom_transform = transforms.Compose(
-        [transforms.Resize([args.size, args.size]),
-         transforms.ToTensor()]
-    )
-    dataset = ImageFolder(training_dataset.path, custom_transform)
+    mean, std, count = statistic(args.train_path)
 
-    num_of_train_set = math.floor(0.9 * len(dataset))
-    num_of_val_set = len(dataset) - num_of_train_set
-
-    train_set, val_set = torch.utils.data.random_split(
-        dataset, [num_of_train_set, num_of_val_set])
-
-    train_loader = DataLoader(train_set, batch_size=args.bs, shuffle=True)
-    val_loader = DataLoader(val_set, batch_size=args.bs, shuffle=True)
+    #  custom_transform = transforms.Compose(
+    #      [transforms.Resize([args.size, args.size]),
+    #       transforms.ToTensor()]
+    #  )
+    #  dataset = ImageFolder(training_dataset.path, custom_transform)
+    #  
+    #  num_of_train_set = math.floor(0.9 * len(dataset))
+    #  num_of_val_set = len(dataset) - num_of_train_set
+    #  
+    #  train_set, val_set = torch.utils.data.random_split(
+    #      dataset, [num_of_train_set, num_of_val_set])
+    #  
+    #  train_loader = DataLoader(train_set, batch_size=args.bs, shuffle=True)
+    #  val_loader = DataLoader(val_set, batch_size=args.bs, shuffle=True)
 
     model = Classifier().cuda()
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(
         model.parameters(), lr=args.lr, momentum=0.9)
-    args.ep = 100
 
     for epoch in range(args.ep):
         model.train()
@@ -230,16 +251,16 @@ def main():
     # training_dataset_path = "/home/r06922149/download/acc-german/GTSRB_Challenge/train"
     # testing_dataset_path = "/home/r06922149/download/acc-german/GTSRB_Challenge/test"
 
-    training_dataset_path = args.train_path
-    testing_dataset_path = args.test_path
+    #  training_dataset_path = args.train_path
+    #  testing_dataset_path = args.test_path
+    #  
+    #  testing_dataset = TestingDataSet(testing_dataset_path)
+    #  training_dataset = TrainingDataSet(training_dataset_path)
+    #  
+    #  testing_dataset.print_stats()
+    #  training_dataset.print_stats()
 
-    testing_dataset = TestingDataSet(testing_dataset_path)
-    training_dataset = TrainingDataSet(training_dataset_path)
-
-    testing_dataset.print_stats()
-    training_dataset.print_stats()
-
-    do_train(training_dataset)
+    do_train()
 
 
 if __name__ == "__main__":
