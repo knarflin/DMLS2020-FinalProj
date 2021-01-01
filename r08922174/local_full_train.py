@@ -53,99 +53,6 @@ def statistic(DataPath):
     return tuple(mean), tuple(std), count
 
 
-class DataSet:
-    def __init__(self):
-        self._path = ""
-        self._max_h = None
-        self._max_w = None
-        self._stddev_h = None
-        self._stddev_w = None
-        self._num_of_data = None
-        self._mean_h = None
-        self._mean_w = None
-
-    @property
-    def path(self):
-        return self._path
-
-    @property
-    def num_of_data(self):
-        return self._num_of_data
-
-    def print_stats(self):
-
-        print("Dataset Path:", self._path)
-        print("Num of data:", self._num_of_data)
-        print("Mean Height, Width:", self._mean_h, self._mean_w)
-        print("Stddev. Height, Width:", self._stddev_h, self._stddev_w)
-        print("Max Height, Width:", self._max_h, self._max_w)
-
-
-class TrainingDataSet(DataSet):
-    def __init__(self, dataset_path):
-        DataSet.__init__(self)
-        self.fetch_data_stats(dataset_path)
-
-    def fetch_data_stats(self, train_dir):
-
-        class_dirs = sorted(os.listdir(train_dir))
-        total_metrics = None
-
-        for class_dir in class_dirs:
-            current_dir = os.path.join(train_dir, class_dir)
-            class_id = int(class_dir)
-
-            image_files = os.listdir(current_dir)
-
-            metrics = np.zeros((len(image_files), 2), dtype=int)
-
-            for i, image_file in enumerate(image_files, start=0):
-                image_path = os.path.join(current_dir, image_file)
-                img = cv2.imread(image_path)
-
-                metrics[i, 0] = img.shape[0]
-                metrics[i, 1] = img.shape[1]
-
-            if not isinstance(total_metrics, np.ndarray):
-                total_metrics = metrics
-            else:
-                total_metrics = np.concatenate(
-                    (total_metrics, metrics), axis=0)
-
-        self._path = train_dir
-        self._num_of_data = total_metrics.shape[0]
-        self._mean_h, self._mean_w = np.mean(total_metrics, axis=0)
-        self._stddev_h, self._stddev_w = np.std(total_metrics, axis=0)
-        self._max_h, self._max_w = np.amax(total_metrics, axis=0)
-
-
-class TestingDataSet(DataSet):
-    def __init__(self, dataset_path):
-        DataSet.__init__(self)
-        self.fetch_data_stats(dataset_path)
-
-    def fetch_data_stats(self, current_dir):
-
-        image_files = os.listdir(current_dir)
-
-        total_metrics = np.zeros((len(image_files), 2), dtype=int)
-
-        for i, image_file in enumerate(image_files, start=0):
-            image_path = os.path.join(current_dir, image_file)
-            img = cv2.imread(image_path)
-
-            total_metrics[i, 0] = img.shape[0]
-            total_metrics[i, 1] = img.shape[1]
-
-        self._path = current_dir
-        self._num_of_data = total_metrics.shape[0]
-        self._mean_h, self._mean_w = np.mean(total_metrics, axis=0)
-        self._stddev_h, self._stddev_w = np.std(total_metrics, axis=0)
-        self._max_h, self._max_w = np.amax(total_metrics, axis=0)
-
-# Model
-
-
 class Classifier(nn.Module):
     def __init__(self):
         super(Classifier, self).__init__()
@@ -187,7 +94,7 @@ class Classifier(nn.Module):
 def do_train():
 
     mean, std, count = statistic(args.train_path)
-    print("Mean: {}, Standard deviation: {}, count: {}".format(mean, std, count))
+    #  print("Mean: {}, Standard deviation: {}, count: {}".format(mean, std, count))
 
     custom_transform = transforms.Compose(
         [transforms.Resize([args.size, args.size]),
@@ -206,12 +113,6 @@ def do_train():
     train_set = ImageFolder(root = args.train_path, transform = custom_transform)
     val_set = ImageFolder(root = args.validation_path, transform = custom_transform)
     
-    #  num_of_train_set = math.floor(args.train_val_split_ratio * len(train_set))
-    #  num_of_val_set = len(train_set) - num_of_train_set
-    #  
-    #  train_set, val_set = torch.utils.data.random_split(
-    #      train_set, [num_of_train_set, num_of_val_set])
-
     train_loader = DataLoader(train_set, batch_size=args.bs, \
             pin_memory=True, drop_last=True, sampler=sampler)
     val_loader = DataLoader(val_set, batch_size=args.bs)
@@ -258,8 +159,8 @@ def do_train():
             val_acc += np.sum(np.argmax(val_pred.cpu().data.numpy(),
                                         axis=1) == data[1].numpy())
         accuracy = val_acc / len(val_set)
-        print('Train Acc: %3.6f Loss: %3.6f Val Acc: %3.6f' %
-              (train_acc / len(train_set), train_loss / len(train_set), accuracy))
+        print('Epoch: %d, Train Acc: %3.6f Loss: %3.6f Val Acc: %3.6f' %
+              (epoch, train_acc / len(train_set), train_loss / len(train_set), accuracy))
         if args.model_save and accuracy > BestAccuracy:
             BestAccuracy = accuracy
             torch.save(model, args.model_path + args.model_save)
@@ -278,21 +179,7 @@ def init_random_seed(seed=0):
 def main():
 
     init_random_seed(seed=0)
-
-    # training_dataset_path = "/home/r06922149/download/acc-german/GTSRB_Challenge/train"
-    # testing_dataset_path = "/home/r06922149/download/acc-german/GTSRB_Challenge/test"
-
-    #  training_dataset_path = args.train_path
-    #  testing_dataset_path = args.test_path
-    #  
-    #  testing_dataset = TestingDataSet(testing_dataset_path)
-    #  training_dataset = TrainingDataSet(training_dataset_path)
-    #  
-    #  testing_dataset.print_stats()
-    #  training_dataset.print_stats()
-
     do_train()
-
 
 if __name__ == "__main__":
     main()
