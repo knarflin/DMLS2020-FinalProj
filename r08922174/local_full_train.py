@@ -15,6 +15,7 @@ from torchvision import transforms
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--train_path', type=str, default='./splitdata/train/total/')
+#  parser.add_argument('--train_path', type=str, default='./GTSRB_Challenge/train/')
 parser.add_argument('--validation_path', type=str, default='./splitdata/validation/')
 parser.add_argument('--test_path', type=str, default='./GTSRB_Challenge/test/')
 parser.add_argument('--model_path', type=str, default='./')
@@ -22,7 +23,7 @@ parser.add_argument('--model_load', type=str, default='pretrained_model.pt')
 parser.add_argument('--model_save', type=str, default='saved_model.weight')
 parser.add_argument('--ep', type=int, default=10)
 parser.add_argument('--size', type=int, default=48)
-parser.add_argument('--lr', type=float, default=0.01)
+parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--train_val_split_ratio', type=float, default=0.9)
 parser.add_argument('--bs', type=int, default=16)
 parser.add_argument('--loadOrNot', type=int, default=0, help="1: load saved model, others: no loading.")
@@ -191,27 +192,28 @@ def do_train():
     custom_transform = transforms.Compose(
         [transforms.Resize([args.size, args.size]),
          transforms.ToTensor(), 
-            transforms.Normalize(mean, std)]
+         transforms.Normalize(mean, std)]
     )
     total = sum(count)
-    print("Total: {}".format(total))
     weight = []
     for number in count:
         weight += [torch.true_divide(total, number)] * number
-    sampler = torch.utils.data.sampler.WeightedRandomSampler(torch.Tensor(weight), int(total))
+    #  print("Check weight length: ", len(weight))
+    #  print("Check total length: ", int(total))
+    sampler = torch.utils.data.sampler.WeightedRandomSampler(weights=torch.Tensor(weight), num_samples=int(total))
     del count, weight
 
     train_set = ImageFolder(root = args.train_path, transform = custom_transform)
     val_set = ImageFolder(root = args.validation_path, transform = custom_transform)
     
-    #  num_of_train_set = math.floor(args.train_val_split_ratio * len(dataset))
-    #  num_of_val_set = len(dataset) - num_of_train_set
+    #  num_of_train_set = math.floor(args.train_val_split_ratio * len(train_set))
+    #  num_of_val_set = len(train_set) - num_of_train_set
     #  
     #  train_set, val_set = torch.utils.data.random_split(
-    #      dataset, [num_of_train_set, num_of_val_set])
-    
+    #      train_set, [num_of_train_set, num_of_val_set])
+
     train_loader = DataLoader(train_set, batch_size=args.bs, \
-            pin_memory = True, drop_last = True, sampler = sampler)
+            pin_memory=True, drop_last=True, sampler=sampler)
     val_loader = DataLoader(val_set, batch_size=args.bs)
 
 
@@ -222,11 +224,9 @@ def do_train():
 
     LossFunction = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    #  optimizer = torch.optim.SGD(
+    #      model.parameters(), lr=args.lr, momentum=0.9)
 
-    #  model.eval()
-    #  with torch.no_grad() :
-    #          print('Validatoin', end = ' ')
-    #          #  BestAccuracy = forward(val_loader, model, LossFunction)
     BestAccuracy = 0.0
 
     if args.model_save:
