@@ -8,19 +8,24 @@ import argparse
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
+from torchvision.datasets import ImageFolder
 
 
 from torchvision import transforms
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--train_path', type=str, default='./GTSRB_Challenge/train')
-parser.add_argument('--test_path', type=str, default='./GTSRB_Challenge/test')
+parser.add_argument('--train_path', type=str, default='./splitdata/train/total/')
+parser.add_argument('--validation_path', type=str, default='./splitdata/validation/')
+parser.add_argument('--test_path', type=str, default='./GTSRB_Challenge/test/')
+parser.add_argument('--model_path', type=str, default='./')
+parser.add_argument('--model_load', type=str, default='pretrained_model.pt')
+parser.add_argument('--model_save', type=str, default='saved_model.weight')
 parser.add_argument('--ep', type=int, default=10)
 parser.add_argument('--size', type=int, default=48)
 parser.add_argument('--lr', type=float, default=0.01)
+parser.add_argument('--train_val_split_ratio', type=float, default=0.9)
 parser.add_argument('--bs', type=int, default=16)
-parser.add_argument('--load', type=str, default=None)
-parser.add_argument('--save', type=str, default='tmp.weight')
+parser.add_argument('--loadOrNot', type=int, default=0, help="1: load saved model, others: no loading.")
 parser.add_argument('--show', type=int, default=1)
 parser.add_argument('--site', type=int, default=0)
 args = parser.parse_args()
@@ -28,22 +33,23 @@ args = parser.parse_args()
 
 
 def statistic(DataPath):
-	
-	transform = transforms.Compose([
-		transforms.Resize((args['size'], args['size'])), 
-		transforms.ToTensor(), 
-	])
-	dataset = ImageFolder(DataPath, transform = transform)
+    
+    transform = transforms.Compose([
+        transforms.Resize((args.size, args.size)), 
+        transforms.ToTensor(), 
+    ])
+    dataset = ImageFolder(DataPath, transform = transform)
+    total = 43
 
-	count = torch.IntTensor([0] * 43)
-	mean = torch.stack([image.mean((1, 2)) for image, _ in dataset]).mean(0)
-	std = torch.stack([image for image, _ in dataset]).std((0, 2, 3))
-	for label in range(43):
-		count[label] = len(os.listdir(DataPath + '%05d/'%label))
+    count = torch.IntTensor([0] * total)
+    mean = torch.stack([image.mean((1, 2)) for image, _ in dataset]).mean(0)
+    std = torch.stack([image for image, _ in dataset]).std((0, 2, 3))
+    for label in range(total):
+        count[label] = len(os.listdir(DataPath + '%05d/'%label))
 
-	del transform, dataset
+    del transform, dataset
 
-	return tuple(mean), tuple(std), count
+    return tuple(mean), tuple(std), count
 
 
 class DataSet:
@@ -179,36 +185,59 @@ class Classifier(nn.Module):
 
 def do_train():
 
-    from torchvision.datasets import ImageFolder
-
     mean, std, count = statistic(args.train_path)
+    print("Mean: {}, Standard deviation: {}, count: {}".format(mean, std, count))
 
-    #  custom_transform = transforms.Compose(
-    #      [transforms.Resize([args.size, args.size]),
-    #       transforms.ToTensor()]
-    #  )
-    #  dataset = ImageFolder(training_dataset.path, custom_transform)
-    #  
-    #  num_of_train_set = math.floor(0.9 * len(dataset))
+    custom_transform = transforms.Compose(
+        [transforms.Resize([args.size, args.size]),
+         transforms.ToTensor(), 
+            transforms.Normalize(mean, std)]
+    )
+    total = sum(count)
+    print("Total: {}".format(total))
+    weight = []
+    for number in count:
+        weight += [torch.true_divide(total, number)] * number
+    sampler = torch.utils.data.sampler.WeightedRandomSampler(torch.Tensor(weight), int(total))
+    del count, weight
+
+    train_set = ImageFolder(root = args.train_path, transform = custom_transform)
+    val_set = ImageFolder(root = args.validation_path, transform = custom_transform)
+    
+    #  num_of_train_set = math.floor(args.train_val_split_ratio * len(dataset))
     #  num_of_val_set = len(dataset) - num_of_train_set
     #  
     #  train_set, val_set = torch.utils.data.random_split(
     #      dataset, [num_of_train_set, num_of_val_set])
-    #  
-    #  train_loader = DataLoader(train_set, batch_size=args.bs, shuffle=True)
-    #  val_loader = DataLoader(val_set, batch_size=args.bs, shuffle=True)
+    
+    train_loader = DataLoader(train_set, batch_size=args.bs, \
+            pin_memory = True, drop_last = True, sampler = sampler)
+    val_loader = DataLoader(val_set, batch_size=args.bs)
 
-    model = Classifier().cuda()
-    loss = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(
-        model.parameters(), lr=args.lr, momentum=0.9)
 
+    if args.loadOrNot == 1:
+        model = torch.load(args.model_path + args.model_load)
+    else:
+        model = Classifier().cuda()
+
+    LossFunction = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+
+    #  model.eval()
+    #  with torch.no_grad() :
+    #          print('Validatoin', end = ' ')
+    #          #  BestAccuracy = forward(val_loader, model, LossFunction)
+    BestAccuracy = 0.0
+
+    if args.model_save:
+            torch.save(model, args.model_path + args.model_save)
+    
     for epoch in range(args.ep):
         model.train()
         for i, data in enumerate(train_loader):
             optimizer.zero_grad()
             train_pred = model(data[0].cuda())
-            batch_loss = loss(train_pred, data[1].cuda())
+            batch_loss = LossFunction(train_pred, data[1].cuda())
             batch_loss.backward()
             optimizer.step()
 
@@ -217,7 +246,7 @@ def do_train():
         model.eval()
         for i, data in enumerate(train_loader):
             train_pred = model(data[0].cuda())
-            batch_loss = loss(train_pred, data[1].cuda())
+            batch_loss = LossFunction(train_pred, data[1].cuda())
             train_acc += np.sum(np.argmax(train_pred.cpu().data.numpy(),
                                           axis=1) == data[1].numpy())
             train_loss += batch_loss.item()
@@ -228,10 +257,12 @@ def do_train():
             val_pred = model(data[0].cuda())
             val_acc += np.sum(np.argmax(val_pred.cpu().data.numpy(),
                                         axis=1) == data[1].numpy())
-
+        accuracy = val_acc / len(val_set)
         print('Train Acc: %3.6f Loss: %3.6f Val Acc: %3.6f' %
-              (train_acc/len(train_set), train_loss/len(train_set), val_acc/len(val_set)))
-
+              (train_acc / len(train_set), train_loss / len(train_set), accuracy))
+        if args.model_save and accuracy > BestAccuracy:
+            BestAccuracy = accuracy
+            torch.save(model, args.model_path + args.model_save)
 
 def init_random_seed(seed=0):
     torch.manual_seed(seed)
