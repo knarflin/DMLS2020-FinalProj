@@ -61,6 +61,7 @@ For example, we spawn four workers to train single model.
 2. Training accuracy will be small, which owes to training dataset has been divided by ```# of workers``` to do distributed training, hence we should sum it up across all workers.
 
 ### Result
+For example, 4 workers training scene.
 Dataset size: 35289
 #### Worker 1:![](https://i.imgur.com/saR4VZg.png)
 #### Worker 2:![](https://i.imgur.com/zfrQkkt.png)
