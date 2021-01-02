@@ -1,6 +1,7 @@
-# DMLS2020-FinalProj-Centralized training
-## R08922174
+# DMLS2020-FinalProj
+### R08922174
 
+## Centralized training
 ### Setups
 Following Cheng-han's setup:
 1. Apply Weighted Sampler
@@ -34,3 +35,36 @@ Epoch   | Training Accuracy | Validation Accuracy
 9       |      99.46%       |        99.06%
 10      |      99.05%       |        98.39%
 
+## Distributed training
+### Setups
+#### Docker side
+1. Get ubuntu-cryptenv7.tar from Frank.
+2. ```docker load < ubuntu-cryptenv7.tar```
+3. ```docker run -t -d -v /home/{PATH}/DMLS2020-FinalProj/:/FinalProj --gpus all --name crypten-container00{docker_index} ubuntu:cryptenv7```
+4. ```docker exec -it crypten-container00{docker_index} /bin/bash```
+5. ```cd /FinalProj/your folder```
+#### Pytorch distributed side
+1. ```python3 -m torch.distributed.launch --nproc_per_node={# of gpu available in each node(your machine)} --nnodes={# of workers you need} --node_rank={node index in current worker} --master_addr="{docker address}" --master_port=1234 distri_train.py --local_rank 0```
+2. How to get docker address? 
+    A: ```docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' {container_name_or_id}```
+3. In distri_train.py, --local_rank argument meaning. This var should be modified once we wish to specify gpu_id to execute.(ex. two gpus in 140.112.90.52, two workers train simultaneously.) So this var should be set to 1 given single gpu available.
+
+### How to run
+For example, we spawn four workers to train single model.
+1. Make 4 dockers available on your machine.
+2. Enter 4 dockers and run ```python3 -m torch......--node_rank=#worker_id......--local_rank``` 0 respectively
+3. Should be aware of ```--node_rank```; all the rest remains intact.
+4. Wait and see result.
+
+### Cautions
+1. One should not set learning rate as large as 0.01, my default value is 0.001.
+2. Training accuracy will be small, which owes to training dataset has been divided by # of workers to do distributed training.
+
+### Result
+Dataset size: 35289
+#### Worker 1:![](https://i.imgur.com/saR4VZg.png)
+#### Worker 2:![](https://i.imgur.com/zfrQkkt.png)
+#### Worker 3:![](https://i.imgur.com/Q0yPTde.png)
+#### Worker 4:![](https://i.imgur.com/KC7RQez.png)
+#### Time consumed:
+![](https://i.imgur.com/ZoEyFw0.png)
