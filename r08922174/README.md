@@ -58,7 +58,7 @@ For example, we spawn four workers to train single model.
 
 ### Cautions
 1. One should not set learning rate as large as 0.01, my default value is 0.001.
-2. Training accuracy will be small, which owes to training dataset has been divided by # of workers to do distributed training.
+2. Training accuracy will be small, which owes to training dataset has been divided by ```# of workers``` to do distributed training, hence we should sum it up across all workers.
 
 ### Result
 Dataset size: 35289
