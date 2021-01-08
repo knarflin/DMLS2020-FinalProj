@@ -1,0 +1,414 @@
+
+Program : train.py
+
+Argument :
+ep                       100
+size                     48
+lr                       0.05
+bs                       32
+load                     None
+save                     tmp.weight
+show                     1
+site                     2
+
+Validatoin 3.805 1.92%
+
+Epoch :  0
+Training 3.668 7.42%
+Validatoin 3.759 4.21%
+
+Epoch :  1
+Training 3.405 13.67%
+Validatoin 3.811 3.83%
+
+Epoch :  2
+Training 3.017 20.31%
+Validatoin 4.042 5.75%
+
+Epoch :  3
+Training 2.724 27.73%
+Validatoin 4.458 5.36%
+
+Epoch :  4
+Training 2.721 30.08%
+Validatoin 4.103 8.05%
+
+Epoch :  5
+Training 2.427 35.16%
+Validatoin 4.024 8.81%
+
+Epoch :  6
+Training 2.147 50.00%
+Validatoin 4.337 13.79%
+
+Epoch :  7
+Training 1.967 49.61%
+Validatoin 4.165 13.03%
+
+Epoch :  8
+Training 1.855 56.64%
+Validatoin 4.686 9.58%
+
+Epoch :  9
+Training 1.845 52.34%
+Validatoin 4.643 13.41%
+
+Epoch : 10
+Training 1.666 59.77%
+Validatoin 4.478 12.64%
+
+Epoch : 11
+Training 1.259 71.88%
+Validatoin 4.771 14.56%
+
+Epoch : 12
+Training 1.319 62.89%
+Validatoin 4.462 14.94%
+
+Epoch : 13
+Training 1.333 64.06%
+Validatoin 4.776 19.54%
+
+Epoch : 14
+Training 1.256 67.19%
+Validatoin 4.808 16.86%
+
+Epoch : 15
+Training 1.098 71.09%
+Validatoin 4.732 21.07%
+
+Epoch : 16
+Training 0.833 80.08%
+Validatoin 5.222 18.01%
+
+Epoch : 17
+Training 1.167 71.88%
+Validatoin 5.637 15.33%
+
+Epoch : 18
+Training 1.115 77.34%
+Validatoin 4.888 15.71%
+
+Epoch : 19
+Training 0.796 83.59%
+Validatoin 4.996 18.01%
+
+Epoch : 20
+Training 0.729 82.81%
+Validatoin 5.091 16.48%
+
+Epoch : 21
+Training 0.710 80.86%
+Validatoin 5.100 19.92%
+
+Epoch : 22
+Training 0.609 87.11%
+Validatoin 5.267 18.01%
+
+Epoch : 23
+Training 1.182 82.81%
+Validatoin 4.548 22.22%
+
+Epoch : 24
+Training 0.666 88.67%
+Validatoin 4.597 22.99%
+
+Epoch : 25
+Training 0.641 85.16%
+Validatoin 5.358 17.24%
+
+Epoch : 26
+Training 0.652 85.16%
+Validatoin 4.958 20.31%
+
+Epoch : 27
+Training 0.615 88.28%
+Validatoin 5.011 21.84%
+
+Epoch : 28
+Training 0.399 92.19%
+Validatoin 5.237 22.61%
+
+Epoch : 29
+Training 0.289 94.53%
+Validatoin 5.492 22.22%
+
+Epoch : 30
+Training 0.414 89.06%
+Validatoin 5.444 24.52%
+
+Epoch : 31
+Training 0.387 91.02%
+Validatoin 5.227 24.14%
+
+Epoch : 32
+Training 0.241 96.48%
+Validatoin 5.718 23.37%
+
+Epoch : 33
+Training 0.425 90.23%
+Validatoin 5.598 23.37%
+
+Epoch : 34
+Training 0.314 92.58%
+Validatoin 5.802 22.61%
+
+Epoch : 35
+Training 0.357 91.41%
+Validatoin 6.043 20.69%
+
+Epoch : 36
+Training 0.207 96.09%
+Validatoin 6.075 21.84%
+
+Epoch : 37
+Training 0.218 95.70%
+Validatoin 6.260 20.69%
+
+Epoch : 38
+Training 0.240 94.14%
+Validatoin 6.052 24.90%
+
+Epoch : 39
+Training 0.180 96.48%
+Validatoin 6.214 24.90%
+
+Epoch : 40
+Training 0.278 94.53%
+Validatoin 6.446 19.92%
+
+Epoch : 41
+Training 0.247 94.53%
+Validatoin 6.327 24.52%
+
+Epoch : 42
+Training 0.180 96.88%
+Validatoin 6.635 24.52%
+
+Epoch : 43
+Training 0.164 96.09%
+Validatoin 6.834 22.22%
+
+Epoch : 44
+Training 0.259 94.53%
+Validatoin 6.737 20.69%
+
+Epoch : 45
+Training 0.246 93.36%
+Validatoin 6.856 22.61%
+
+Epoch : 46
+Training 0.155 96.09%
+Validatoin 6.754 24.90%
+
+Epoch : 47
+Training 0.358 92.58%
+Validatoin 6.592 24.90%
+
+Epoch : 48
+Training 0.336 92.58%
+Validatoin 6.111 22.99%
+
+Epoch : 49
+Training 0.321 93.36%
+Validatoin 6.154 22.61%
+
+Epoch : 50
+Training 0.134 98.44%
+Validatoin 6.259 25.67%
+
+Epoch : 51
+Training 0.201 94.53%
+Validatoin 6.312 25.67%
+
+Epoch : 52
+Training 0.096 98.44%
+Validatoin 6.226 25.67%
+
+Epoch : 53
+Training 0.105 98.44%
+Validatoin 6.397 26.44%
+
+Epoch : 54
+Training 0.105 97.27%
+Validatoin 6.640 24.14%
+
+Epoch : 55
+Training 0.179 96.09%
+Validatoin 6.963 22.22%
+
+Epoch : 56
+Training 0.277 94.53%
+Validatoin 6.237 25.67%
+
+Epoch : 57
+Training 0.107 97.66%
+Validatoin 6.299 26.44%
+
+Epoch : 58
+Training 0.071 98.83%
+Validatoin 6.405 24.14%
+
+Epoch : 59
+Training 0.119 97.27%
+Validatoin 6.577 25.67%
+
+Epoch : 60
+Training 0.146 96.88%
+Validatoin 6.420 22.22%
+
+Epoch : 61
+Training 0.101 98.44%
+Validatoin 6.666 26.05%
+
+Epoch : 62
+Training 0.183 95.31%
+Validatoin 6.746 26.05%
+
+Epoch : 63
+Training 0.135 96.88%
+Validatoin 6.456 26.44%
+
+Epoch : 64
+Training 0.094 98.44%
+Validatoin 6.902 21.46%
+
+Epoch : 65
+Training 0.158 96.48%
+Validatoin 6.626 25.67%
+
+Epoch : 66
+Training 0.096 98.05%
+Validatoin 6.702 27.97%
+
+Epoch : 67
+Training 0.105 97.66%
+Validatoin 6.857 29.12%
+
+Epoch : 68
+Training 0.078 98.83%
+Validatoin 6.989 26.05%
+
+Epoch : 69
+Training 0.165 96.48%
+Validatoin 6.805 26.05%
+
+Epoch : 70
+Training 0.047 99.61%
+Validatoin 6.901 26.44%
+
+Epoch : 71
+Training 0.110 98.83%
+Validatoin 7.433 24.90%
+
+Epoch : 72
+Training 0.118 96.09%
+Validatoin 7.342 22.99%
+
+Epoch : 73
+Training 0.098 97.66%
+Validatoin 7.054 27.59%
+
+Epoch : 74
+Training 0.159 96.48%
+Validatoin 6.752 25.29%
+
+Epoch : 75
+Training 0.232 96.88%
+Validatoin 6.727 27.20%
+
+Epoch : 76
+Training 0.084 98.44%
+Validatoin 6.779 26.05%
+
+Epoch : 77
+Training 0.084 98.83%
+Validatoin 6.942 26.82%
+
+Epoch : 78
+Training 0.151 97.27%
+Validatoin 7.054 22.61%
+
+Epoch : 79
+Training 0.169 96.48%
+Validatoin 6.950 24.52%
+
+Epoch : 80
+Training 0.071 99.22%
+Validatoin 7.471 24.52%
+
+Epoch : 81
+Training 0.084 98.44%
+Validatoin 6.859 27.97%
+
+Epoch : 82
+Training 0.090 98.44%
+Validatoin 7.010 24.90%
+
+Epoch : 83
+Training 0.174 95.31%
+Validatoin 7.280 23.75%
+
+Epoch : 84
+Training 0.257 94.14%
+Validatoin 9.024 19.16%
+
+Epoch : 85
+Training 0.273 95.31%
+Validatoin 6.968 23.37%
+
+Epoch : 86
+Training 0.087 97.66%
+Validatoin 6.970 24.14%
+
+Epoch : 87
+Training 0.142 95.31%
+Validatoin 6.921 24.90%
+
+Epoch : 88
+Training 0.080 98.44%
+Validatoin 7.233 26.05%
+
+Epoch : 89
+Training 0.066 98.83%
+Validatoin 6.874 26.44%
+
+Epoch : 90
+Training 0.071 98.05%
+Validatoin 6.962 26.44%
+
+Epoch : 91
+Training 0.060 98.05%
+Validatoin 6.886 27.59%
+
+Epoch : 92
+Training 0.090 98.83%
+Validatoin 6.849 27.20%
+
+Epoch : 93
+Training 0.039 99.22%
+Validatoin 7.094 26.82%
+
+Epoch : 94
+Training 0.068 98.83%
+Validatoin 6.945 29.50%
+
+Epoch : 95
+Training 0.117 97.27%
+Validatoin 6.955 27.97%
+
+Epoch : 96
+Training 0.065 98.44%
+Validatoin 7.015 27.97%
+
+Epoch : 97
+Training 0.068 98.44%
+Validatoin 7.156 26.05%
+
+Epoch : 98
+Training 0.068 98.83%
+Validatoin 7.376 24.14%
+
+Epoch : 99
+Training 0.094 97.66%
+Validatoin 7.202 25.67%

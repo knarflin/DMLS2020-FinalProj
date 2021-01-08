@@ -34,7 +34,7 @@ def forward(DataLoader, model, LossFunction, optimizer = None) :
 		torch.cuda.empty_cache()
 		if optimizer :
 			optimizer.zero_grad()
-			
+
 		# forward
 		inputs = inputs.cuda()
 		outputs = model(inputs)
@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
 	args = get_args()
 	ModelPath = '../../'
-	DataPath = '../../splitdata/'
+	DataPath = '../../splitdata2/'
 
 	mean, std, count = statistic(DataPath + 'train/site%d/'%args['site'])
 
@@ -90,6 +90,7 @@ if __name__ == '__main__':
 	TrainingLoader = DataLoader(TrainingSet, batch_size = args['bs'], num_workers = os.cpu_count() // 2, pin_memory = True, drop_last = True, sampler = sampler, prefetch_factor = 1)
 	ValidationLoader = DataLoader(ValidationSet, batch_size = args['bs'], num_workers = os.cpu_count() // 2, prefetch_factor = 1)
 
+	torch.cuda.init()
 	if args['load']:
 		model = torch.load(ModelPath + args['load'])
 	else:
@@ -97,7 +98,7 @@ if __name__ == '__main__':
 
 	torch.backends.cudnn.benchmark = True
 	LossFunction = torch.nn.CrossEntropyLoss()
-	optimizer = torch.optim.Adam(model.parameters(), lr = args['lr'])
+	optimizer = torch.optim.SGD(model.parameters(), lr = args['lr'])
 
 	model.eval()
 	with torch.no_grad() :
