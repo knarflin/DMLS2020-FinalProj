@@ -6,6 +6,7 @@ import math
 import argparse
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
@@ -14,18 +15,18 @@ from torchvision.datasets import ImageFolder
 from torchvision import transforms
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--train_path', type=str, default='./splitdata/train/total/')
+parser.add_argument('--train_path', type=str, default='./splitdata_small/train/total/')
 #  parser.add_argument('--train_path', type=str, default='./GTSRB_Challenge/train/')
-parser.add_argument('--validation_path', type=str, default='./splitdata/validation/')
+parser.add_argument('--validation_path', type=str, default='./splitdata_small/validation/')
 parser.add_argument('--test_path', type=str, default='./GTSRB_Challenge/test/')
 parser.add_argument('--model_path', type=str, default='./')
 parser.add_argument('--model_load', type=str, default='pretrained_model.pt')
 parser.add_argument('--model_save', type=str, default='saved_model.weight')
-parser.add_argument('--ep', type=int, default=10)
+parser.add_argument('--ep', type=int, default=100)
 parser.add_argument('--size', type=int, default=48)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--train_val_split_ratio', type=float, default=0.9)
-parser.add_argument('--bs', type=int, default=16)
+parser.add_argument('--bs', type=int, default=32)
 parser.add_argument('--loadOrNot', type=int, default=0, help="1: load saved model, others: no loading.")
 parser.add_argument('--show', type=int, default=1)
 parser.add_argument('--site', type=int, default=0)
@@ -53,42 +54,66 @@ def statistic(DataPath):
     return tuple(mean), tuple(std), count
 
 
+# class Classifier(nn.Module):
+#     def __init__(self):
+#         super(Classifier, self).__init__()
+
+#         self.cnn = nn.Sequential(
+#             nn.Conv2d(3, 64, 3, 1, 1),  # [64, 48, 48]
+#             nn.BatchNorm2d(64),
+#             nn.ReLU(),
+#             nn.MaxPool2d(2, 2, 0),      # [64, 24, 24]
+
+#             nn.Conv2d(64, 128, 3, 1, 1),  # [128, 24, 24]
+#             nn.BatchNorm2d(128),
+#             nn.ReLU(),
+#             nn.MaxPool2d(2, 2, 0),      # [128, 12, 12]
+
+#             nn.Conv2d(128, 256, 3, 1, 1),  # [256, 12, 12]
+#             nn.BatchNorm2d(256),
+#             nn.ReLU(),
+#             nn.Conv2d(256, 256, 3, 1, 1),  # [256, 12, 12]
+#             nn.BatchNorm2d(256),
+#             nn.ReLU(),
+#             nn.MaxPool2d(2, 2, 0),      # [256, 6, 6]
+#         )
+#         self.fc = nn.Sequential(
+#             # nn.Linear(512*4*4, 1024),
+#             nn.Linear(256*6*6, 1024),
+#             nn.ReLU(),
+#             nn.Linear(1024, 512),
+#             nn.ReLU(),
+#             nn.Linear(512, 43)
+#         )
+
+#     def forward(self, x):
+#         out = self.cnn(x)
+#         out = out.view(out.size()[0], -1)  # Flattern
+#         return self.fc(out)
 class Classifier(nn.Module):
     def __init__(self):
         super(Classifier, self).__init__()
 
-        self.cnn = nn.Sequential(
-            nn.Conv2d(3, 64, 3, 1, 1),  # [64, 48, 48]
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2, 0),      # [64, 24, 24]
-
-            nn.Conv2d(64, 128, 3, 1, 1),  # [128, 24, 24]
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2, 0),      # [128, 12, 12]
-
-            nn.Conv2d(128, 256, 3, 1, 1),  # [256, 12, 12]
-            nn.BatchNorm2d(256),
-            nn.ReLU(),
-            nn.Conv2d(256, 256, 3, 1, 1),  # [256, 12, 12]
-            nn.BatchNorm2d(256),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2, 0),      # [256, 6, 6]
-        )
-        self.fc = nn.Sequential(
-            # nn.Linear(512*4*4, 1024),
-            nn.Linear(256*6*6, 1024),
-            nn.ReLU(),
-            nn.Linear(1024, 512),
-            nn.ReLU(),
-            nn.Linear(512, 43)
-        )
+        self.cnn1 = nn.Conv2d(3, 8, kernel_size=3, stride=1, padding=1)
+        self.fc1 = nn.Linear(8*12*12, 43)
 
     def forward(self, x):
-        out = self.cnn(x)
-        out = out.view(out.size()[0], -1)  # Flattern
-        return self.fc(out)
+
+        # Input: [3, 48, 48]
+
+        # Conv Layers
+        out = self.cnn1(x)  # [8, 48, 48]
+        out = F.relu(out)
+        out = F.max_pool2d(out, 4)  # [8, 12, 12]
+
+        # Flattern
+        out = out.view(-1, 8 * 12 * 12)  # [8*12*12]
+
+        # FC Layers
+        out = self.fc1(out)  # [43]
+
+        # Ouput: [43]
+        return out
 
 
 def do_train():
@@ -124,7 +149,8 @@ def do_train():
         model = Classifier().cuda()
 
     LossFunction = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    optimizer   = torch.optim.SGD(model.parameters(), lr=0.05)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     #  optimizer = torch.optim.SGD(
     #      model.parameters(), lr=args.lr, momentum=0.9)
 
