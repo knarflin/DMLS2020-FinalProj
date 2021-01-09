@@ -35,6 +35,8 @@ Epoch   | Training Accuracy | Validation Accuracy
 9       |      99.46%       |        99.06%
 10      |      99.05%       |        98.39%
 
+```Updated 1/10``` For downscaled results, see ```record_allsite.txt``` for reference.
+
 ## Distributed training
 ### Setups
 #### Docker side
