@@ -1,6 +1,6 @@
 #!/bin/bash
 
-path_prefix="./splitdata/train/"
+path_prefix="./splitdata_small/train/"
 mkdir ${path_prefix}total
 cp -r ${path_prefix}site0/* ${path_prefix}total/
 
