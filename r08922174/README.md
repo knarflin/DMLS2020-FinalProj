@@ -40,8 +40,8 @@ Epoch   | Training Accuracy | Validation Accuracy
 ## Distributed training
 ### Setups
 #### Docker side
-1. Get ubuntu-cryptenv7.tar from Frank.
-2. ```docker load < ubuntu-cryptenv7.tar```
+1. Get ubuntu:cryptenv7.tar from Frank.
+2. ```docker load < ubuntu:cryptenv7.tar```
 3. ```docker run -t -d -v /home/{PATH}/DMLS2020-FinalProj/:/FinalProj --gpus all --name crypten-container00{docker_index} ubuntu:cryptenv7```
 4. ```docker exec -it crypten-container00{docker_index} /bin/bash```
 5. ```cd /FinalProj/your folder```
@@ -49,7 +49,7 @@ Epoch   | Training Accuracy | Validation Accuracy
 1. ```python3 -m torch.distributed.launch --nproc_per_node={# of gpu available in each node(your machine)} --nnodes={# of workers you need} --node_rank={node index in current worker} --master_addr="{docker address}" --master_port=1234 distri_train.py --local_rank 0```
 2. How to get docker address? 
     A: ```docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' {container_name_or_id}```
-3. In distri_train.py, --local_rank argument meaning. This var should be modified once we wish to specify gpu_id to execute.(ex. two gpus in 140.112.90.52, two workers train simultaneously.) So this var should be set to 1 given single gpu available.
+3. In **distri_train.py**, ```--local_rank``` argument meaning. This var should be modified once we wish to specify gpu_id to execute.(ex. two gpus in 140.112.90.52, two workers train simultaneously.) So this var should be set to 1 given single gpu available.
 
 ### How to run
 For example, we spawn four workers to train single model.
