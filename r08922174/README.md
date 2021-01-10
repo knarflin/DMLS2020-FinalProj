@@ -20,8 +20,11 @@ Run something such as: python3 local_full_train.py [personal args (optional)]
 4. Don't bother to specify arguments, since default values should work fine.
 
 ### Result
+#### Downscaled Dataset size
+Dataset size: 1000+
+> ```[Updated 1/10]``` For downscaled results, see ```record_allsite.txt``` for reference.
+#### Full Dataset size
 Dataset size: 35289
-
 Epoch   | Training Accuracy | Validation Accuracy
 --------|-------------------|--------------------
 1       |      96.38%       |        95.36%
@@ -34,8 +37,6 @@ Epoch   | Training Accuracy | Validation Accuracy
 8       |      99.69%       |        99.29%
 9       |      99.46%       |        99.06%
 10      |      99.05%       |        98.39%
-
-```Updated 1/10``` For downscaled results, see ```record_allsite.txt``` for reference.
 
 ## Distributed training
 ### Setups
@@ -63,8 +64,12 @@ For example, we spawn four workers to train single model.
 2. Training accuracy will be small, which owes to training dataset has been divided by ```# of workers``` to do distributed training, hence we should sum it up across all workers.
 
 ### Result
-For example, 4 workers training scene.
+#### Downscaled Dataset size
+Dataset size: 1000+
+> ```[Updated 1/10]``` For downscaled results, see ```worker_0-3.txt``` for reference. (Train Acc should also be summed up by 4 workers.)
+#### Full Dataset size
 Dataset size: 35289
+For example, 4 workers training scene.
 #### Worker 1:![](https://i.imgur.com/saR4VZg.png)
 #### Worker 2:![](https://i.imgur.com/zfrQkkt.png)
 #### Worker 3:![](https://i.imgur.com/Q0yPTde.png)
