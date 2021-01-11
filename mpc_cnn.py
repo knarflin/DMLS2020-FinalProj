@@ -121,7 +121,7 @@ class Classifier(nn.Module):
         return out
 
 
-@mpc.run_multiprocess(world_size=2)
+@mpc.run_multiprocess(world_size=4)
 def run_mpc_cnn(
     epochs=50, examples=50, features=100, lr=0.05, skip_plaintext=False
 ):
@@ -205,14 +205,34 @@ def do_train(training_datastats, validation_datastats, resize_hw=48):
         x_site1 = torch.empty([data_size[1], 3, 48, 48])
         y_site1 = torch.empty([data_size[1]])
 
+    if rank == 2:
+        x_site2 = x_site
+        y_site2 = y_site
+    else:
+        x_site2 = torch.empty([data_size[2], 3, 48, 48])
+        y_site2 = torch.empty([data_size[2]])
+
+    if rank == 3:
+        x_site3 = x_site
+        y_site3 = y_site
+    else:
+        x_site3 = torch.empty([data_size[3], 3, 48, 48])
+        y_site3 = torch.empty([data_size[3]])
+
     x_site0_enc = crypten.cryptensor(x_site0, src=0)
     x_site1_enc = crypten.cryptensor(x_site1, src=1)
+    x_site2_enc = crypten.cryptensor(x_site2, src=2)
+    x_site3_enc = crypten.cryptensor(x_site3, src=3)
 
     y_site0_enc = crypten.cryptensor(y_site0, src=0)
     y_site1_enc = crypten.cryptensor(y_site1, src=1)
+    y_site2_enc = crypten.cryptensor(y_site2, src=2)
+    y_site3_enc = crypten.cryptensor(y_site3, src=3)
 
-    x_sites_enc = crypten.cat([x_site0_enc, x_site1_enc], dim=0)
-    y_sites_enc = crypten.cat([y_site0_enc, y_site1_enc], dim=0)
+    x_sites_enc = crypten.cat(
+        [x_site0_enc, x_site1_enc, x_site2_enc, x_site3_enc], dim=0)
+    y_sites_enc = crypten.cat(
+        [y_site0_enc, y_site1_enc, y_site2_enc, y_site3_enc], dim=0)
 
     train_dataset = CustomDataset(x_sites_enc, y_sites_enc)
     print("len train_dataset", len(train_dataset))
@@ -238,8 +258,8 @@ def do_train(training_datastats, validation_datastats, resize_hw=48):
 
     for epoch in range(num_epoch):
 
-        model.cpu()
         model.train()
+        model.cpu()
 
         for j in range(0, num_samples, batch_size):
 
@@ -269,43 +289,56 @@ def do_train(training_datastats, validation_datastats, resize_hw=48):
             batch_loss.backward()
             model.update_parameters(learning_rate)
 
-            print("Epoch", epoch, "Batch", int(j/batch_size))
-
-        model.eval()
-
-        # # Compute training accuracy every epoch
-        # correct_count = 0
-        # loss_sum = 0
-        # for i, data in enumerate(train_loader):
-        #     site0_feature_enc = crypten.cryptensor(data[0], src=0)
-        #     x_combined_enc = crypten.cat([site0_feature_enc], dim=0)
-        #     x_combined_enc.requires_grad = False
-
-        #     site0_label_plain = data[1]
-        #     y_one_hot = label_eye[site0_label_plain]
-        #     y_train = crypten.cryptensor(y_one_hot, requires_grad=True)
-
-        #     train_pred = model(x_combined_enc)
-
-        #     batch_loss = loss(train_pred, y_train)
-
-        #     pred = train_pred.get_plain_text().argmax(1)
-        #     correct = pred.eq(site0_label_plain)
-        #     correct_count += correct.sum(0, keepdim=True).float()
-
-        #     loss_plaintext = batch_loss.get_plain_text().item()
-        #     loss_sum += loss_plaintext
-
-        # accuracy = correct_count / train_set.__len__()
-        # print(
-        #     f"Rank {rank} Epoch {epoch} Training: "
-        #     f"Loss {loss_sum:.4f} Accuracy {accuracy.item():.2f}"
-        # )
-
-        # Compute validation accuracy every epoch
+        if rank == 0:
+            print("Epoch Train Done")
 
         model.cuda()
+        model.eval()
 
+        # Compute training accuracy every epoch
+        correct_count = 0
+        loss_sum = 0
+
+        for j in range(0, num_samples, batch_size):
+
+            start, end = j, min(j + batch_size, num_samples)
+
+            model.zero_grad()
+            x_sites_enc.requires_grad = False
+
+            label_one_hot = label_eye[y_sites_plain[start:end]]
+            y_enc_batch = crypten.cryptensor(label_one_hot)
+            y_enc_batch.requires_grad = False
+
+            # TODO: y_sites_enc.requires_grad, not batchly part
+
+            # model.cuda()
+            # x_combined_enc.cuda()
+            # y_train.cuda()
+            # loss.cuda()
+
+            # pdb.set_trace()
+
+            # y_pred = model(x_combined_enc)
+            y_pred = model(x_sites_enc[start:end].cuda()).cpu()
+
+            batch_loss = loss(y_pred, y_enc_batch)
+
+            pred = y_pred.get_plain_text().argmax(1)
+            correct = pred.eq(y_sites_plain[start:end])
+            correct_count += correct.sum(0, keepdim=True).float()
+
+            loss_plaintext = batch_loss.get_plain_text().item()
+            loss_sum += loss_plaintext
+
+        accuracy = correct_count / train_set.__len__()
+
+        print(
+            f"Rank {rank} Epoch {epoch} Training: "
+            f"Loss {loss_sum:.4f} Accuracy {accuracy.item():.2f}"
+        )
+
+        # Compute validation accuracy every epoch
         correct_count = 0
         loss_sum = 0
         for i, data in enumerate(valid_loader):
